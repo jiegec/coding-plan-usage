@@ -50,7 +50,7 @@ coding_plan_usage/
 │   ├── bigmodel.py      # 智谱 BigModel API client
 │   └── kimi.py          # Kimi API client
 ├── models.py            # Pydantic data models for responses
-└── formatter.py         # Output formatting (table, JSON, etc.)
+└── formatter.py         # Output formatting
 ```
 
 ## Configuration Format

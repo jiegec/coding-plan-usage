@@ -6,6 +6,7 @@ from typing import List
 from .config import load_config
 from .models import UsageInfo
 from .providers.kimi import KimiProvider
+from .providers.bigmodel import BigModelProvider
 from .formatter import format_usage_simple
 
 
@@ -13,6 +14,8 @@ async def fetch_provider_usage(provider_name: str, provider_config) -> UsageInfo
     """Fetch usage for a single provider."""
     if provider_name == "kimi":
         provider = KimiProvider(provider_config)
+    elif provider_name == "bigmodel":
+        provider = BigModelProvider(provider_config)
     else:
         raise ValueError(f"Unknown provider: {provider_name}")
 

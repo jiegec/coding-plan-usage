@@ -5,7 +5,7 @@ A CLI tool to fetch and display Coding Plan usage from multiple AI providers.
 ## Supported Providers
 
 - **Kimi** - https://api.kimi.com/coding/v1/usages
-- **智谱 BigModel** - https://open.bigmodel.cn/api/monitor/usage/quota/limit (planned)
+- **智谱 BigModel** - https://open.bigmodel.cn/api/monitor/usage/quota/limit
 
 ## Installation
 
