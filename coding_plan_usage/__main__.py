@@ -1,21 +1,22 @@
 import argparse
 import asyncio
 import sys
-from typing import List
 
-from .config import load_config
+from .config import load_config, ProviderConfig
 from .models import UsageInfo
+from .providers.base import BaseProvider
 from .providers.kimi import KimiProvider
 from .providers.bigmodel import BigModelProvider
 from .formatter import format_usage_simple
 
 
-async def fetch_provider_usage(provider_name: str, provider_config) -> UsageInfo:
+async def fetch_provider_usage(provider_name: str, provider_config: ProviderConfig) -> UsageInfo:
     """Fetch usage for a single provider."""
+    provider: BaseProvider
     if provider_name == "kimi":
-        provider = KimiProvider(provider_config)
+        provider = KimiProvider(provider_config)  # type: ignore[assignment]
     elif provider_name == "bigmodel":
-        provider = BigModelProvider(provider_config)
+        provider = BigModelProvider(provider_config)  # type: ignore[assignment]
     else:
         raise ValueError(f"Unknown provider: {provider_name}")
 
@@ -24,7 +25,7 @@ async def fetch_provider_usage(provider_name: str, provider_config) -> UsageInfo
     return provider.parse_usage(raw_data)
 
 
-async def main():
+async def main() -> None:
     parser = argparse.ArgumentParser(
         description="Fetch Coding Plan usage from multiple AI providers."
     )
@@ -51,7 +52,7 @@ async def main():
 ''', file=sys.stderr)
         sys.exit(1)
 
-    usages: List[UsageInfo] = []
+    usages: list[UsageInfo] = []
 
     for provider_name, provider_config in config.providers.items():
         try:
@@ -68,7 +69,7 @@ async def main():
         sys.exit(1)
 
 
-def cli():
+def cli() -> None:
     """Synchronous entry point for CLI."""
     asyncio.run(main())
 

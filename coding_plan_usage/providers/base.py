@@ -7,9 +7,9 @@ from ..config import ProviderConfig
 class BaseProvider(ABC):
     """Abstract base class for Coding Plan usage providers."""
 
-    def __init__(self, config: ProviderConfig):
+    def __init__(self, config: ProviderConfig) -> None:
         self.config = config
-        self._headers = {}
+        self._headers: dict[str, str] = {}
 
     @property
     @abstractmethod
@@ -23,7 +23,7 @@ class BaseProvider(ABC):
         pass
 
     @abstractmethod
-    async def fetch_usage(self) -> dict:
+    async def fetch_usage(self) -> Any:
         """Call provider API and return raw response data."""
         pass
 

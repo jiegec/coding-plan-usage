@@ -1,5 +1,4 @@
 from pydantic import BaseModel
-from typing import Optional, List
 from datetime import datetime
 
 
@@ -16,18 +15,18 @@ class LimitDetail(BaseModel):
     limit: str
     used: str
     remaining: str
-    reset_time: Optional[datetime] = None
-    usage_details: List[UsageDetail] = []
+    reset_time: datetime | None = None
+    usage_details: list[UsageDetail] = []
 
 
 class UsageInfo(BaseModel):
     """Standardized usage information across all providers."""
     provider: str
-    user_id: Optional[str] = None
-    membership_level: Optional[str] = None
+    user_id: str | None = None
+    membership_level: str | None = None
     limit: str
     used: str
     remaining: str
-    reset_time: Optional[datetime] = None
-    limits: List[LimitDetail] = []
+    reset_time: datetime | None = None
+    limits: list[LimitDetail] = []
     raw_response: dict

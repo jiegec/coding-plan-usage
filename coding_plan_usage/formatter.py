@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import List
 from .models import UsageInfo
 
 
@@ -25,7 +24,7 @@ def _compute_percentage(used: str, limit: str) -> int | None:
         return None
 
 
-def format_usage_table(usages: List[UsageInfo]) -> str:
+def format_usage_table(usages: list[UsageInfo]) -> str:
     """Format usage info as a readable table."""
     lines = []
     lines.append("=" * 80)
@@ -46,7 +45,7 @@ def format_usage_table(usages: List[UsageInfo]) -> str:
     return "\n".join(lines)
 
 
-def format_usage_simple(usages: List[UsageInfo]) -> str:
+def format_usage_simple(usages: list[UsageInfo]) -> str:
     """Format usage info in a simple readable format."""
     lines = []
     for usage in usages:

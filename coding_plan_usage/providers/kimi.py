@@ -1,7 +1,6 @@
 import httpx
-from datetime import datetime, timezone
+from datetime import datetime
 from ..models import UsageInfo, LimitDetail
-from ..config import ProviderConfig
 from .base import BaseProvider
 
 
@@ -21,7 +20,7 @@ class KimiProvider(BaseProvider):
             "Content-Type": "application/json",
         }
 
-    async def fetch_usage(self) -> dict:
+    async def fetch_usage(self) -> dict:  # type: ignore[no-any-return]
         """Fetch usage data from Kimi API."""
         async with httpx.AsyncClient() as client:
             response = await client.get(
@@ -29,7 +28,7 @@ class KimiProvider(BaseProvider):
                 headers=self._headers,
             )
             response.raise_for_status()
-            return response.json()
+            return response.json()  # type: ignore[no-any-return]
 
     def _parse_reset_time(self, reset_time_str: str | None) -> datetime | None:
         """Parse ISO format reset time string to datetime."""

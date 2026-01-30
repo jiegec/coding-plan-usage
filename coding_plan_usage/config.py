@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
-from pydantic import BaseModel, Field
-from typing import Dict, Optional
+from pydantic import BaseModel
+from typing import Dict
 
 
 class ProviderConfig(BaseModel):

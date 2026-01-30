@@ -68,7 +68,7 @@ def test_bigmodel_parse_usage(bigmodel_provider, sample_bigmodel_response):
     assert usage.limit == "40000000"
     assert usage.used == "16931403"
     assert usage.remaining == "23068597"
-    assert usage.reset_time == datetime(2026, 1, 30, 9, 22, 14, 422000, tzinfo=timezone.utc)
+    assert usage.reset_time == datetime(2026, 1, 30, 12, 42, 14, 422000, tzinfo=timezone.utc)
 
     # Test limits parsing
     assert len(usage.limits) == 2
@@ -109,7 +109,7 @@ def test_bigmodel_get_unit_name(bigmodel_provider):
 def test_bigmodel_parse_reset_time(bigmodel_provider):
     # Test with valid timestamp
     dt = bigmodel_provider._parse_reset_time(1769776934422)
-    assert dt == datetime(2026, 1, 30, 9, 22, 14, 422000, tzinfo=timezone.utc)
+    assert dt == datetime(2026, 1, 30, 12, 42, 14, 422000, tzinfo=timezone.utc)
 
     # Test with None
     assert bigmodel_provider._parse_reset_time(None) is None
