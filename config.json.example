@@ -1,0 +1,10 @@
+{
+  "providers": {
+    "kimi": {
+      "api_key": "your-kimi-api-key"
+    },
+    "bigmodel": {
+      "api_key": "your-bigmodel-access-key"
+    }
+  }
+}
