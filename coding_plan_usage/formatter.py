@@ -1,5 +1,28 @@
+from datetime import datetime
 from typing import List
 from .models import UsageInfo
+
+
+def _format_datetime(dt: datetime | None) -> str | None:
+    """Format datetime in local timezone and locale."""
+    if dt is None:
+        return None
+    # Convert to local timezone
+    local_dt = dt.astimezone()
+    # Format with locale-aware datetime string
+    return local_dt.strftime("%Y-%m-%d %H:%M:%S %Z")
+
+
+def _compute_percentage(used: str, limit: str) -> int | None:
+    """Compute percentage from used and limit values."""
+    try:
+        used_val = int(used)
+        limit_val = int(limit)
+        if limit_val == 0:
+            return None
+        return int(used_val * 100 / limit_val)
+    except (ValueError, TypeError):
+        return None
 
 
 def format_usage_table(usages: List[UsageInfo]) -> str:
@@ -16,7 +39,7 @@ def format_usage_table(usages: List[UsageInfo]) -> str:
             f"{usage.used:<10} {usage.limit:<10} {usage.remaining:<10}"
         )
         if usage.reset_time:
-            lines.append(f"  Reset Time: {usage.reset_time}")
+            lines.append(f"  Reset Time: {_format_datetime(usage.reset_time)}")
         lines.append("")
 
     lines.append("=" * 80)
@@ -33,9 +56,13 @@ def format_usage_simple(usages: List[UsageInfo]) -> str:
             lines.append(f"User ID: {usage.user_id}")
         if usage.membership_level:
             lines.append(f"Membership: {usage.membership_level}")
-        lines.append(f"Usage: {usage.used} / {usage.limit} (Remaining: {usage.remaining})")
+
+        percentage = _compute_percentage(usage.used, usage.limit)
+        percentage_str = f" ({percentage}%)" if percentage is not None else ""
+        lines.append(f"Usage: {usage.used} / {usage.limit}{percentage_str} (Remaining: {usage.remaining})")
+
         if usage.reset_time:
-            lines.append(f"Reset Time: {usage.reset_time}")
+            lines.append(f"Reset Time: {_format_datetime(usage.reset_time)}")
 
         if usage.limits:
             lines.append("\n  Extra Rate Limits:")
@@ -44,9 +71,13 @@ def format_usage_simple(usages: List[UsageInfo]) -> str:
                 if limit.time_unit == "TOKENS_LIMIT":
                     continue
                 duration_unit = "min" if limit.time_unit == "TIME_UNIT_MINUTE" else limit.time_unit.replace("TIME_UNIT_", "").lower()
-                lines.append(f"    - {limit.duration} {duration_unit}: {limit.used}/{limit.limit} (Remaining: {limit.remaining})")
+
+                limit_percentage = _compute_percentage(limit.used, limit.limit)
+                percentage_str = f" ({limit_percentage}%)" if limit_percentage is not None else ""
+
+                lines.append(f"    - {limit.duration} {duration_unit}: {limit.used}/{limit.limit}{percentage_str} (Remaining: {limit.remaining})")
                 if limit.reset_time:
-                    lines.append(f"      Reset: {limit.reset_time}")
+                    lines.append(f"      Reset: {_format_datetime(limit.reset_time)}")
                 # Show usage details if available (e.g., BigModel TIME_LIMIT breakdown)
                 if limit.usage_details:
                     for detail in limit.usage_details:
