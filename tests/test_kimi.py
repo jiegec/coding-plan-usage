@@ -61,3 +61,13 @@ def test_kimi_parse_usage(kimi_provider, sample_kimi_response):
     assert usage.remaining == "87"
     assert usage.reset_time == datetime(2026, 2, 6, 8, 31, 59, 863136, tzinfo=timezone.utc)
     assert usage.raw_response == sample_kimi_response
+
+    # Test rate limits parsing
+    assert len(usage.limits) == 1
+    limit = usage.limits[0]
+    assert limit.duration == 300
+    assert limit.time_unit == "TIME_UNIT_MINUTE"
+    assert limit.limit == "100"
+    assert limit.used == "65"
+    assert limit.remaining == "35"
+    assert limit.reset_time == datetime(2026, 1, 30, 13, 31, 59, 863136, tzinfo=timezone.utc)

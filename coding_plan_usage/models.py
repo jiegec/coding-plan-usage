@@ -1,6 +1,16 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
+
+
+class LimitDetail(BaseModel):
+    """Rate limit detail for a specific time window."""
+    duration: int
+    time_unit: str
+    limit: str
+    used: str
+    remaining: str
+    reset_time: Optional[datetime] = None
 
 
 class UsageInfo(BaseModel):
@@ -12,4 +22,5 @@ class UsageInfo(BaseModel):
     used: str
     remaining: str
     reset_time: Optional[datetime] = None
+    limits: List[LimitDetail] = []
     raw_response: dict

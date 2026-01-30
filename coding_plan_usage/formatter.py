@@ -35,5 +35,13 @@ def format_usage_simple(usages: List[UsageInfo]) -> str:
         lines.append(f"Usage: {usage.used} / {usage.limit} (Remaining: {usage.remaining})")
         if usage.reset_time:
             lines.append(f"Reset Time: {usage.reset_time}")
+
+        if usage.limits:
+            lines.append("\n  Rate Limits:")
+            for limit in usage.limits:
+                duration_unit = "min" if limit.time_unit == "TIME_UNIT_MINUTE" else limit.time_unit.replace("TIME_UNIT_", "").lower()
+                lines.append(f"    - {limit.duration} {duration_unit}: {limit.used}/{limit.limit} (Remaining: {limit.remaining})")
+                if limit.reset_time:
+                    lines.append(f"      Reset: {limit.reset_time}")
     lines.append(f"\n{'='*60}")
     return "\n".join(lines)
