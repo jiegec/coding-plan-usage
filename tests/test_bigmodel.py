@@ -62,7 +62,7 @@ def test_bigmodel_parse_usage(bigmodel_provider, sample_bigmodel_response):
     usage = bigmodel_provider.parse_usage(sample_bigmodel_response)
 
     assert usage.provider == "bigmodel"
-    assert usage.user_id == ""
+    assert usage.user_id is None  # BigModel doesn't provide user ID
     assert usage.membership_level is None
     # TOKENS_LIMIT is used as primary
     assert usage.limit == "40000000"
@@ -88,6 +88,12 @@ def test_bigmodel_parse_usage(bigmodel_provider, sample_bigmodel_response):
     assert time_limit.limit == "100"
     assert time_limit.used == "92"
     assert time_limit.remaining == "8"
+    # Test usage_details parsing
+    assert len(time_limit.usage_details) == 2
+    assert time_limit.usage_details[0].model_code == "search-prime"
+    assert time_limit.usage_details[0].usage == 83
+    assert time_limit.usage_details[1].model_code == "web-reader"
+    assert time_limit.usage_details[1].usage == 9
 
 
 def test_bigmodel_get_unit_name(bigmodel_provider):

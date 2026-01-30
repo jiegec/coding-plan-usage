@@ -3,6 +3,12 @@ from typing import Optional, List
 from datetime import datetime
 
 
+class UsageDetail(BaseModel):
+    """Detail of usage for a specific model/feature."""
+    model_code: str
+    usage: int
+
+
 class LimitDetail(BaseModel):
     """Rate limit detail for a specific time window."""
     duration: int
@@ -11,12 +17,13 @@ class LimitDetail(BaseModel):
     used: str
     remaining: str
     reset_time: Optional[datetime] = None
+    usage_details: List[UsageDetail] = []
 
 
 class UsageInfo(BaseModel):
     """Standardized usage information across all providers."""
     provider: str
-    user_id: str
+    user_id: Optional[str] = None
     membership_level: Optional[str] = None
     limit: str
     used: str

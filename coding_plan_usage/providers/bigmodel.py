@@ -1,6 +1,6 @@
 import httpx
 from datetime import datetime, timezone
-from ..models import UsageInfo, LimitDetail
+from ..models import UsageInfo, LimitDetail, UsageDetail
 from ..config import ProviderConfig
 from .base import BaseProvider
 
@@ -66,6 +66,17 @@ class BigModelProvider(BaseProvider):
             duration = number if limit_type == "TIME_LIMIT" else 0
             time_unit = self._get_unit_name(unit) if limit_type == "TIME_LIMIT" else limit_type
 
+            # Parse usage details (model-level breakdown) for TIME_LIMIT
+            usage_details = []
+            if limit_type == "TIME_LIMIT" and "usageDetails" in limit:
+                for detail in limit["usageDetails"]:
+                    usage_details.append(
+                        UsageDetail(
+                            model_code=detail.get("modelCode", ""),
+                            usage=detail.get("usage", 0)
+                        )
+                    )
+
             limits.append(
                 LimitDetail(
                     duration=duration,
@@ -74,6 +85,7 @@ class BigModelProvider(BaseProvider):
                     used=str(limit.get("currentValue", 0)),
                     remaining=str(limit.get("remaining", 0)),
                     reset_time=reset_time,
+                    usage_details=usage_details,
                 )
             )
         return limits
@@ -100,7 +112,6 @@ class BigModelProvider(BaseProvider):
 
         return UsageInfo(
             provider=self.name,
-            user_id="",  # BigModel doesn't provide user ID in this response
             membership_level=None,
             limit=str(primary_limit.get("usage", 0)),
             used=str(primary_limit.get("currentValue", 0)),
