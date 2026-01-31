@@ -312,8 +312,8 @@ class UsageStatusBar:
                     if limit.reset_time:
                         reset_time = limit.reset_time.astimezone()
                         now = datetime.now().astimezone()
-                        # Show date if reset is not today, or if time window is longer than a day
-                        if reset_time.date() != now.date() or limit.duration * (1 if limit.time_unit == "day" else 0) > 1:
+                        # Show date if reset is not today
+                        if reset_time.date() != now.date():
                             reset_str = reset_time.strftime("%m/%d %H:%M")
                         else:
                             reset_str = reset_time.strftime("%H:%M")
