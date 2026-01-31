@@ -8,9 +8,10 @@ from datetime import datetime
 from typing import Any
 
 from .config import load_config, ProviderConfig
-from .models import UsageInfo, LimitDetail
+from .models import UsageInfo
 from .providers.kimi import KimiProvider
 from .providers.bigmodel import BigModelProvider
+from .formatter import _compute_percentage, format_usage_simple
 
 # Import AppKit for native macOS menu bar
 import AppKit  # type: ignore[import-untyped]
@@ -248,90 +249,38 @@ class UsageStatusBar:
         # Store the formatted status for copying
         self.current_status_text = self._format_detailed_status()
 
-    def _compute_percentage(self, used: str, limit: str) -> int | None:
-        """Compute percentage from used and limit values."""
-        try:
-            used_val = int(used)
-            limit_val = int(limit)
-            if limit_val == 0:
-                return None
-            return int(used_val * 100 / limit_val)
-        except (ValueError, TypeError):
-            return None
-
-    def _format_time_window(self, limit: LimitDetail) -> str:
-        """Format the time window for a rate limit."""
-        if limit.time_unit == "hour":
-            return f"{limit.duration}h"
-        elif limit.time_unit == "minute":
-            return f"{limit.duration}m"
-        elif limit.time_unit == "day":
-            return f"{limit.duration}d"
-        elif limit.time_unit == "second":
-            return f"{limit.duration}s"
-        elif limit.time_unit == "TOKENS_LIMIT":
-            return "total"
-        else:
-            unit = limit.time_unit.replace("TIME_UNIT_", "").lower()
-            return f"{limit.duration}{unit[0]}"
-
     def _format_status_line(self, usage: UsageInfo) -> str:
         """Format a single status line for the menubar."""
+        # Short provider names
+        short_names = {
+            "kimi": "K",
+            "bigmodel": "B",
+        }
+        short_name = short_names.get(usage.provider, usage.provider[:1].upper())
+
         if not usage.limits:
-            return f"{usage.provider}: N/A"
+            return f"{short_name}: N/A"
 
-        # Find the most relevant limit to display (prefer longer time windows)
-        sorted_limits = sorted(
-            usage.limits,
-            key=lambda limit: (
-                limit.duration * (24 if limit.time_unit == "day" else
-                           168 if limit.time_unit == "week" else
-                           720 if limit.time_unit == "month" else
-                           1 if limit.time_unit == "hour" else
-                           1/60 if limit.time_unit == "minute" else 1)
-            ),
-            reverse=True
-        )
+        # Show percentage for each limit
+        percentages = []
+        for limit in usage.limits:
+            pct = _compute_percentage(limit.used, limit.limit)
+            if pct is not None:
+                percentages.append(f"{pct}%")
+            else:
+                percentages.append(f"{limit.used}/{limit.limit}")
 
-        limit = sorted_limits[0]
-        percentage = self._compute_percentage(limit.used, limit.limit)
-
-        if percentage is not None:
-            return f"{usage.provider}: {percentage}%"
-        return f"{usage.provider}: {limit.used}/{limit.limit}"
+        return f"{short_name}: {'/'.join(percentage for percentage in percentages)}"
 
     def _format_detailed_status(self) -> str:
         """Format detailed status text for copying."""
         if not self.current_usage_data:
             return "No usage data available."
 
-        lines = []
-        for usage in self.current_usage_data:
-            lines.append(f"\n{'='*50}")
-            lines.append(f"Provider: {usage.provider}")
-            if usage.user_id:
-                lines.append(f"User ID: {usage.user_id}")
-            if usage.membership_level:
-                lines.append(f"Membership: {usage.membership_level}")
-
-            if usage.limits:
-                lines.append("\n  Rate Limits:")
-                for limit in usage.limits:
-                    time_window = self._format_time_window(limit)
-                    percentage = self._compute_percentage(limit.used, limit.limit)
-                    percentage_str = f" ({percentage}%)" if percentage is not None else ""
-                    lines.append(f"    - {time_window}: {limit.used}/{limit.limit}{percentage_str} (remaining: {limit.remaining})")
-                    if limit.reset_time:
-                        reset_str = limit.reset_time.astimezone().strftime("%Y-%m-%d %H:%M %Z")
-                        lines.append(f"      Reset: {reset_str}")
-            else:
-                lines.append("\n  No rate limits available.")
-
-        lines.append(f"\n{'='*50}")
+        result = format_usage_simple(self.current_usage_data)
         if self.last_updated:
-            lines.append(f"\nLast updated: {self.last_updated.strftime('%Y-%m-%d %H:%M:%S')}")
-
-        return "\n".join(lines)
+            result += f"\n\nLast updated: {self.last_updated.strftime('%Y-%m-%d %H:%M:%S')}"
+        return result
 
     def run(self) -> None:
         """Start the app."""
