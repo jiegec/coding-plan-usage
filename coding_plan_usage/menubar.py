@@ -283,7 +283,7 @@ class UsageStatusBar:
 
         for usage in self.current_usage_data:
             # Provider name as header (disabled, bold-like by using uppercase or emoji)
-            header_text = f"📊 {usage.provider.upper()}"
+            header_text = f"{usage.provider.upper()}"
             if usage.membership_level:
                 header_text += f" ({usage.membership_level})"
             item = AppKit.NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
@@ -311,9 +311,9 @@ class UsageStatusBar:
                     # Second line: window and reset time
                     if limit.reset_time:
                         reset_str = limit.reset_time.astimezone().strftime("%H:%M")
-                        line2 = f"    📅 {time_window} · resets {reset_str}"
+                        line2 = f"    {time_window} · resets {reset_str}"
                     else:
-                        line2 = f"    📅 {time_window}"
+                        line2 = f"    {time_window}"
                     item2 = AppKit.NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
                         line2, None, ""
                     )
