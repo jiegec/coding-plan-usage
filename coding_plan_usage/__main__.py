@@ -8,6 +8,7 @@ from .providers.base import BaseProvider
 from .providers.kimi import KimiProvider
 from .providers.bigmodel import BigModelProvider
 from .formatter import format_usage_simple
+from .menubar import run_menubar
 
 
 async def fetch_provider_usage(provider_name: str, provider_config: ProviderConfig) -> UsageInfo:
@@ -34,7 +35,16 @@ async def main() -> None:
         default="config.json",
         help="Path to configuration file (default: config.json)",
     )
+    parser.add_argument(
+        "--menubar",
+        action="store_true",
+        help="Run as macOS menubar app (auto-refreshes every 5 minutes)",
+    )
     args = parser.parse_args()
+
+    if args.menubar:
+        run_menubar(args.config)
+        return
 
     try:
         config = load_config(args.config)
