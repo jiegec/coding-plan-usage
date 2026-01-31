@@ -316,7 +316,7 @@ class UsageStatusBar:
                         if reset_time.date() != now.date():
                             reset_str = reset_time.strftime("%m/%d %H:%M")
                         else:
-                            reset_str = reset_time.strftime("%H:%M")
+                            reset_str = reset_time.strftime("%H:%M today")
                         line2 = f"    Time: {time_window} · resets {reset_str}"
                     else:
                         line2 = f"    Time: {time_window}"
