@@ -348,7 +348,7 @@ class UsageStatusBar:
         if limit.time_unit == "hour":
             return f"{limit.duration}h"
         elif limit.time_unit == "minute":
-            return f"{limit.duration}m"
+            return f"{limit.duration}min"
         elif limit.time_unit == "day":
             return f"{limit.duration}d"
         elif limit.time_unit == "second":
