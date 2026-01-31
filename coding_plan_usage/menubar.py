@@ -18,6 +18,7 @@ from .formatter import _compute_percentage, format_usage_simple
 import AppKit  # type: ignore[import-untyped]
 import Foundation  # type: ignore[import-untyped]
 import objc  # type: ignore[import-untyped]
+from PyObjCTools import AppHelper  # type: ignore[import-untyped]
 
 
 class AppDelegate(AppKit.NSObject):  # type: ignore[misc]
@@ -393,7 +394,7 @@ class UsageStatusBar:
         # Set up signal handler for Ctrl-C
         def handle_sigint(_signum: int, _frame: Any) -> None:
             print("\nReceived Ctrl-C, terminating...", file=sys.stderr)
-            self.app.terminate_(None)
+            AppHelper.stopEventLoop()
 
         signal.signal(signal.SIGINT, handle_sigint)
 
@@ -411,10 +412,10 @@ class UsageStatusBar:
             True,  # repeats
         )
 
-        # Run the app - this will block until app terminates
-        print("DEBUG: Calling app.run()", file=sys.stderr)
-        self.app.run()
-        print("DEBUG: app.run() returned", file=sys.stderr)
+        # Run the app using AppHelper to properly handle Python signals
+        print("DEBUG: Starting event loop", file=sys.stderr)
+        AppHelper.runConsoleEventLoop()
+        print("DEBUG: Event loop ended", file=sys.stderr)
 
 
 def run_menubar(config_path: str | None = None) -> None:
