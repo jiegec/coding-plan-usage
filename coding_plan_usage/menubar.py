@@ -8,7 +8,7 @@ from datetime import datetime
 from typing import Any
 
 from .config import load_config, ProviderConfig
-from .models import UsageInfo
+from .models import UsageInfo, LimitDetail
 from .providers.kimi import KimiProvider
 from .providers.bigmodel import BigModelProvider
 from .formatter import _compute_percentage, format_usage_simple
@@ -99,7 +99,7 @@ class UsageStatusBar:
         """Set up the menu."""
         self.menu = AppKit.NSMenu.alloc().init()
 
-        # Add menu items
+        # Add action items at the top
         refresh_item = AppKit.NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
             "Refresh Now", "refresh:", ""
         )
@@ -114,6 +114,12 @@ class UsageStatusBar:
 
         self.menu.addItem_(AppKit.NSMenuItem.separatorItem())
 
+        # Usage info section (will be populated dynamically)
+        self.usage_section_start = self.menu.numberOfItems()
+
+        self.menu.addItem_(AppKit.NSMenuItem.separatorItem())
+
+        # Last updated time
         self.last_updated_item = AppKit.NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
             "Last updated: Never", None, ""
         )
@@ -242,12 +248,109 @@ class UsageStatusBar:
         else:
             print("DEBUG: Cannot set title - no button!", file=sys.stderr)
 
+        # Update usage menu items
+        self._update_usage_menu_items()
+
         # Update last updated time
         if self.last_updated:
             self.last_updated_item.setTitle_(f"Last updated: {self.last_updated.strftime('%H:%M:%S')}")
 
         # Store the formatted status for copying
         self.current_status_text = self._format_detailed_status()
+
+    def _update_usage_menu_items(self) -> None:
+        """Update the usage info section in the menu."""
+        # Remove old usage items (between usage_section_start and the separator before last_updated)
+        # We need to find where to insert new items
+        separator_index = self.usage_section_start
+
+        # Remove items between section start and the "Last updated" separator
+        while self.menu.numberOfItems() > separator_index + 1:
+            item = self.menu.itemAtIndex_(separator_index)
+            if item == self.last_updated_item or (item and item.isSeparatorItem()):
+                break
+            self.menu.removeItemAtIndex_(separator_index)
+
+        # Insert new usage items
+        insert_index = separator_index
+        if not self.current_usage_data:
+            item = AppKit.NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
+                "No usage data available", None, ""
+            )
+            item.setEnabled_(False)
+            self.menu.insertItem_atIndex_(item, insert_index)
+            return
+
+        for usage in self.current_usage_data:
+            # Provider name as header (disabled, bold-like by using uppercase or emoji)
+            header_text = f"📊 {usage.provider.upper()}"
+            if usage.membership_level:
+                header_text += f" ({usage.membership_level})"
+            item = AppKit.NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
+                header_text, None, ""
+            )
+            item.setEnabled_(False)
+            self.menu.insertItem_atIndex_(item, insert_index)
+            insert_index += 1
+
+            if usage.limits:
+                for limit in usage.limits:
+                    pct = _compute_percentage(limit.used, limit.limit)
+                    pct_str = f"{pct}%" if pct is not None else f"{limit.used}/{limit.limit}"
+                    time_window = self._format_time_window_short(limit)
+
+                    # Main line: percentage/usage
+                    line1 = f"    {pct_str} ({limit.used}/{limit.limit})"
+                    item1 = AppKit.NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
+                        line1, None, ""
+                    )
+                    item1.setEnabled_(False)
+                    self.menu.insertItem_atIndex_(item1, insert_index)
+                    insert_index += 1
+
+                    # Second line: window and reset time
+                    if limit.reset_time:
+                        reset_str = limit.reset_time.astimezone().strftime("%H:%M")
+                        line2 = f"    📅 {time_window} · resets {reset_str}"
+                    else:
+                        line2 = f"    📅 {time_window}"
+                    item2 = AppKit.NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
+                        line2, None, ""
+                    )
+                    item2.setEnabled_(False)
+                    self.menu.insertItem_atIndex_(item2, insert_index)
+                    insert_index += 1
+            else:
+                item = AppKit.NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
+                    "    No rate limits available", None, ""
+                )
+                item.setEnabled_(False)
+                self.menu.insertItem_atIndex_(item, insert_index)
+                insert_index += 1
+
+            # Add small spacing between providers
+            item = AppKit.NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
+                "", None, ""
+            )
+            item.setEnabled_(False)
+            self.menu.insertItem_atIndex_(item, insert_index)
+            insert_index += 1
+
+    def _format_time_window_short(self, limit: LimitDetail) -> str:
+        """Format the time window as a short string."""
+        if limit.time_unit == "hour":
+            return f"{limit.duration}h"
+        elif limit.time_unit == "minute":
+            return f"{limit.duration}m"
+        elif limit.time_unit == "day":
+            return f"{limit.duration}d"
+        elif limit.time_unit == "second":
+            return f"{limit.duration}s"
+        elif limit.time_unit == "TOKENS_LIMIT":
+            return "total"
+        else:
+            unit = limit.time_unit.replace("TIME_UNIT_", "").lower()
+            return f"{limit.duration}{unit[0]}"
 
     def _format_status_line(self, usage: UsageInfo) -> str:
         """Format a single status line for the menubar."""
