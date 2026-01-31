@@ -2,6 +2,7 @@
 
 import asyncio
 import os
+import signal
 import sys
 import threading
 from datetime import datetime
@@ -300,7 +301,7 @@ class UsageStatusBar:
                     time_window = self._format_time_window_short(limit)
 
                     # Main line: percentage/usage
-                    line1 = f"    {pct_str} ({limit.used}/{limit.limit})"
+                    line1 = f"    Usage: {pct_str} ({limit.used}/{limit.limit})"
                     item1 = AppKit.NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
                         line1, None, ""
                     )
@@ -311,9 +312,9 @@ class UsageStatusBar:
                     # Second line: window and reset time
                     if limit.reset_time:
                         reset_str = limit.reset_time.astimezone().strftime("%H:%M")
-                        line2 = f"    {time_window} · resets {reset_str}"
+                        line2 = f"    Time: {time_window} · resets {reset_str}"
                     else:
-                        line2 = f"    {time_window}"
+                        line2 = f"    Time: {time_window}"
                     item2 = AppKit.NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
                         line2, None, ""
                     )
@@ -388,6 +389,13 @@ class UsageStatusBar:
     def run(self) -> None:
         """Start the app."""
         print("DEBUG: Starting app run", file=sys.stderr)
+
+        # Set up signal handler for Ctrl-C
+        def handle_sigint(_signum: int, _frame: Any) -> None:
+            print("\nReceived Ctrl-C, terminating...", file=sys.stderr)
+            self.app.terminate_(None)
+
+        signal.signal(signal.SIGINT, handle_sigint)
 
         # Initial data fetch
         print("DEBUG: Starting initial refresh", file=sys.stderr)
