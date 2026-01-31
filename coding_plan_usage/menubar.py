@@ -2,7 +2,6 @@
 
 import asyncio
 import os
-import signal
 import sys
 import threading
 from datetime import datetime
@@ -390,9 +389,6 @@ class UsageStatusBar:
         """Start the app."""
         print("DEBUG: Starting app run", file=sys.stderr)
 
-        # Set up signal handling via a pipe to integrate with Cocoa run loop
-        self._setup_signal_handling()
-
         # Initial data fetch
         print("DEBUG: Starting initial refresh", file=sys.stderr)
         self.refresh_data()
@@ -411,46 +407,6 @@ class UsageStatusBar:
         print("DEBUG: Calling app.run()", file=sys.stderr)
         self.app.run()
         print("DEBUG: app.run() returned", file=sys.stderr)
-
-    def _setup_signal_handling(self) -> None:
-        """Set up signal handling using a pipe to integrate with Cocoa run loop."""
-        import fcntl
-
-        # Create a pipe for signal communication
-        self._sigint_read_fd, self._sigint_write_fd = os.pipe()
-
-        # Make the read end non-blocking
-        flags = fcntl.fcntl(self._sigint_read_fd, fcntl.F_GETFL)
-        fcntl.fcntl(self._sigint_read_fd, fcntl.F_SETFL, flags | os.O_NONBLOCK)
-
-        # Set up signal handler that writes to the pipe
-        def sigint_handler(signum: int, _frame: Any) -> None:
-            os.write(self._sigint_write_fd, b'\x00')
-
-        signal.signal(signal.SIGINT, sigint_handler)
-
-        # Create a file handle for the read end and add it to the run loop
-        self._sigint_handle = Foundation.NSFileHandle.fileHandleWithReadingDescriptor_(self._sigint_read_fd)
-
-        # Create a timer to periodically check for signals
-        Foundation.NSTimer.scheduledTimerWithTimeInterval_target_selector_userInfo_repeats_(
-            0.5,  # Check every 0.5 seconds
-            self,
-            "_checkSigint:",
-            None,
-            True,
-        )
-
-    @objc.typedSelector(b'v@:@')  # type: ignore[misc]
-    def _checkSigint_(self, _timer: Any) -> None:
-        """Check if a signal was received and terminate if so."""
-        try:
-            data = os.read(self._sigint_read_fd, 1)
-            if data:
-                print("\nReceived Ctrl-C, terminating...", file=sys.stderr)
-                self.app.terminate_(None)
-        except (BlockingIOError, OSError):
-            pass
 
 
 def run_menubar(config_path: str | None = None) -> None:
