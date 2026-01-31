@@ -64,19 +64,14 @@ def test_bigmodel_parse_usage(bigmodel_provider, sample_bigmodel_response):
     assert usage.provider == "bigmodel"
     assert usage.user_id is None  # BigModel doesn't provide user ID
     assert usage.membership_level is None
-    # TOKENS_LIMIT is used as primary
-    assert usage.limit == "40000000"
-    assert usage.used == "16931403"
-    assert usage.remaining == "23068597"
-    assert usage.reset_time == datetime(2026, 1, 30, 12, 42, 14, 422000, tzinfo=timezone.utc)
 
     # Test limits parsing
     assert len(usage.limits) == 2
 
-    # TOKENS_LIMIT
+    # TOKENS_LIMIT - now correctly captures the 5-hour time window
     tokens_limit = usage.limits[0]
-    assert tokens_limit.duration == 0
-    assert tokens_limit.time_unit == "TOKENS_LIMIT"
+    assert tokens_limit.duration == 5
+    assert tokens_limit.time_unit == "hour"
     assert tokens_limit.limit == "40000000"
     assert tokens_limit.used == "16931403"
     assert tokens_limit.remaining == "23068597"

@@ -60,10 +60,11 @@ class BigModelProvider(BaseProvider):
 
             reset_time = self._parse_reset_time(limit.get("nextResetTime"))
 
-            # Convert BigModel's structure to LimitDetail
-            # For tokens limit, duration doesn't apply the same way
-            duration = number if limit_type == "TIME_LIMIT" else 0
-            time_unit = self._get_unit_name(unit) if limit_type == "TIME_LIMIT" else limit_type
+            # All BigModel limits have a time window (unit + number)
+            # unit: 1=second, 2=minute, 3=hour, 4=day, 5=month, 6=year
+            # number: the count of units (e.g., 5 hours, 1 month)
+            duration = number
+            time_unit = self._get_unit_name(unit)
 
             # Parse usage details (model-level breakdown) for TIME_LIMIT
             usage_details = []
@@ -91,31 +92,11 @@ class BigModelProvider(BaseProvider):
 
     def parse_usage(self, raw_data: dict) -> UsageInfo:
         """Parse BigModel response into standardized UsageInfo."""
-        data = raw_data.get("data", {})
-        limits_data = data.get("limits", [])
-
-        # Find the main quota (TOKENS_LIMIT) for primary usage display
-        tokens_limit = None
-        time_limit = None
-        for limit in limits_data:
-            if limit.get("type") == "TOKENS_LIMIT":
-                tokens_limit = limit
-            elif limit.get("type") == "TIME_LIMIT":
-                time_limit = limit
-
-        # Use tokens limit as primary if available, otherwise time limit
-        primary_limit = tokens_limit or time_limit or {}
-
-        reset_time = self._parse_reset_time(primary_limit.get("nextResetTime"))
         limits = self._parse_limits(raw_data)
 
         return UsageInfo(
             provider=self.name,
             membership_level=None,
-            limit=str(primary_limit.get("usage", 0)),
-            used=str(primary_limit.get("currentValue", 0)),
-            remaining=str(primary_limit.get("remaining", 0)),
-            reset_time=reset_time,
             limits=limits,
             raw_response=raw_data,
         )

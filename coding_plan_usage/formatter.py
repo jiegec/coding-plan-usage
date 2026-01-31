@@ -1,5 +1,5 @@
 from datetime import datetime
-from .models import UsageInfo
+from .models import UsageInfo, LimitDetail
 
 
 def _format_datetime(dt: datetime | None) -> str | None:
@@ -24,25 +24,23 @@ def _compute_percentage(used: str, limit: str) -> int | None:
         return None
 
 
-def format_usage_table(usages: list[UsageInfo]) -> str:
-    """Format usage info as a readable table."""
-    lines = []
-    lines.append("=" * 80)
-    lines.append(f"{'Provider':<15} {'User ID':<25} {'Membership':<15} {'Used':<10} {'Limit':<10} {'Remaining':<10}")
-    lines.append("-" * 80)
-
-    for usage in usages:
-        membership = usage.membership_level or "N/A"
-        lines.append(
-            f"{usage.provider:<15} {usage.user_id:<25} {membership:<15} "
-            f"{usage.used:<10} {usage.limit:<10} {usage.remaining:<10}"
-        )
-        if usage.reset_time:
-            lines.append(f"  Reset Time: {_format_datetime(usage.reset_time)}")
-        lines.append("")
-
-    lines.append("=" * 80)
-    return "\n".join(lines)
+def _format_time_window(limit: LimitDetail) -> str:
+    """Format the time window for a rate limit."""
+    # Handle BigModel time units
+    if limit.time_unit == "hour":
+        return f"{limit.duration} hour"
+    elif limit.time_unit == "minute":
+        return f"{limit.duration} minute"
+    elif limit.time_unit == "day":
+        return f"{limit.duration} day"
+    elif limit.time_unit == "second":
+        return f"{limit.duration} second"
+    elif limit.time_unit == "TOKENS_LIMIT":
+        return "total"
+    else:
+        # Handle TIME_UNIT_* format from other providers
+        unit = limit.time_unit.replace("TIME_UNIT_", "").lower()
+        return f"{limit.duration} {unit}"
 
 
 def format_usage_simple(usages: list[UsageInfo]) -> str:
@@ -56,30 +54,25 @@ def format_usage_simple(usages: list[UsageInfo]) -> str:
         if usage.membership_level:
             lines.append(f"Membership: {usage.membership_level}")
 
-        percentage = _compute_percentage(usage.used, usage.limit)
-        percentage_str = f" ({percentage}%)" if percentage is not None else ""
-        lines.append(f"Usage: {usage.used} / {usage.limit}{percentage_str} (Remaining: {usage.remaining})")
-
-        if usage.reset_time:
-            lines.append(f"Reset Time: {_format_datetime(usage.reset_time)}")
-
+        # Display rate limits from the limits list
         if usage.limits:
-            lines.append("\n  Extra Rate Limits:")
+            lines.append("\n  Rate Limits:")
             for limit in usage.limits:
-                # Skip TOKENS_LIMIT for BigModel as it's already shown in main usage
-                if limit.time_unit == "TOKENS_LIMIT":
-                    continue
-                duration_unit = "min" if limit.time_unit == "TIME_UNIT_MINUTE" else limit.time_unit.replace("TIME_UNIT_", "").lower()
+                time_window = _format_time_window(limit)
 
                 limit_percentage = _compute_percentage(limit.used, limit.limit)
                 percentage_str = f" ({limit_percentage}%)" if limit_percentage is not None else ""
 
-                lines.append(f"    - {limit.duration} {duration_unit}: {limit.used}/{limit.limit}{percentage_str} (Remaining: {limit.remaining})")
+                lines.append(f"    - {time_window}: {limit.used}/{limit.limit}{percentage_str} (remaining: {limit.remaining})")
                 if limit.reset_time:
                     lines.append(f"      Reset: {_format_datetime(limit.reset_time)}")
-                # Show usage details if available (e.g., BigModel TIME_LIMIT breakdown)
+                # Show usage details if available (e.g., BigModel TIME_LIMIT breakdown by model)
                 if limit.usage_details:
+                    lines.append("      Usage by model:")
                     for detail in limit.usage_details:
                         lines.append(f"        • {detail.model_code}: {detail.usage}")
+        else:
+            lines.append("\n  No rate limits available.")
+
     lines.append(f"\n{'='*60}")
     return "\n".join(lines)

@@ -24,9 +24,5 @@ class UsageInfo(BaseModel):
     provider: str
     user_id: str | None = None
     membership_level: str | None = None
-    limit: str
-    used: str
-    remaining: str
-    reset_time: datetime | None = None
     limits: list[LimitDetail] = []
     raw_response: dict
