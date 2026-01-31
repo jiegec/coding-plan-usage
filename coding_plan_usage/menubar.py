@@ -310,7 +310,13 @@ class UsageStatusBar:
 
                     # Second line: window and reset time
                     if limit.reset_time:
-                        reset_str = limit.reset_time.astimezone().strftime("%H:%M")
+                        reset_time = limit.reset_time.astimezone()
+                        now = datetime.now().astimezone()
+                        # Show date if reset is not today, or if time window is longer than a day
+                        if reset_time.date() != now.date() or limit.duration * (1 if limit.time_unit == "day" else 0) > 1:
+                            reset_str = reset_time.strftime("%m/%d %H:%M")
+                        else:
+                            reset_str = reset_time.strftime("%H:%M")
                         line2 = f"    Time: {time_window} · resets {reset_str}"
                     else:
                         line2 = f"    Time: {time_window}"
