@@ -281,7 +281,7 @@ class UsageStatusBar:
             self.menu.insertItem_atIndex_(item, insert_index)
             return
 
-        for usage in self.current_usage_data:
+        for index, usage in enumerate(self.current_usage_data):
             # Provider name as header (disabled, bold-like by using uppercase or emoji)
             header_text = f"{usage.provider.upper()}"
             if usage.membership_level:
@@ -300,7 +300,7 @@ class UsageStatusBar:
                     time_window = self._format_time_window_short(limit)
 
                     # Main line: percentage/usage
-                    line1 = f"    Usage: {pct_str} ({limit.used}/{limit.limit})"
+                    line1 = f"- Usage: {pct_str} ({limit.used}/{limit.limit})"
                     item1 = AppKit.NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
                         line1, None, ""
                     )
@@ -317,9 +317,9 @@ class UsageStatusBar:
                             reset_str = reset_time.strftime("%m/%d %H:%M")
                         else:
                             reset_str = reset_time.strftime("%H:%M today")
-                        line2 = f"    Time: {time_window} · resets {reset_str}"
+                        line2 = f"  Time: {time_window} · resets {reset_str}"
                     else:
-                        line2 = f"    Time: {time_window}"
+                        line2 = f"  Time: {time_window}"
                     item2 = AppKit.NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
                         line2, None, ""
                     )
@@ -328,19 +328,20 @@ class UsageStatusBar:
                     insert_index += 1
             else:
                 item = AppKit.NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
-                    "    No rate limits available", None, ""
+                    "- No rate limits available", None, ""
                 )
                 item.setEnabled_(False)
                 self.menu.insertItem_atIndex_(item, insert_index)
                 insert_index += 1
 
-            # Add small spacing between providers
-            item = AppKit.NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
-                "", None, ""
-            )
-            item.setEnabled_(False)
-            self.menu.insertItem_atIndex_(item, insert_index)
-            insert_index += 1
+            # Add small spacing between providers (but not after the last one)
+            if index < len(self.current_usage_data) - 1:
+                item = AppKit.NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
+                    "", None, ""
+                )
+                item.setEnabled_(False)
+                self.menu.insertItem_atIndex_(item, insert_index)
+                insert_index += 1
 
     def _format_time_window_short(self, limit: LimitDetail) -> str:
         """Format the time window as a short string."""
