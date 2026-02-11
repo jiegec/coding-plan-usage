@@ -22,7 +22,7 @@ def sample_bigmodel_response():
                     "unit": 3,
                     "number": 5,
                     "percentage": 42,
-                    "nextResetTime": 1769776934422
+                    "nextResetTime": 1769776934422,
                 },
                 {
                     "type": "TIME_LIMIT",
@@ -34,19 +34,14 @@ def sample_bigmodel_response():
                     "percentage": 92,
                     "nextResetTime": 1769776934422,
                     "usageDetails": [
-                        {
-                            "modelCode": "search-prime",
-                            "usage": 83
-                        },
-                        {
-                            "modelCode": "web-reader",
-                            "usage": 9
-                        }
-                    ]
-                }
+                        {"modelCode": "search-prime", "usage": 83},
+                        {"modelCode": "web-reader", "usage": 9},
+                        {"modelCode": "zread", "usage": 0},
+                    ],
+                },
             ]
         },
-        "success": True
+        "success": True,
     }
 
 
@@ -73,7 +68,9 @@ def test_bigmodel_parse_usage(bigmodel_provider, sample_bigmodel_response):
     assert tokens_limit.limit == "100"
     assert tokens_limit.used == "42"
     assert tokens_limit.remaining == "58"
-    assert tokens_limit.reset_time == datetime(2026, 1, 30, 12, 42, 14, 422000, tzinfo=timezone.utc)
+    assert tokens_limit.reset_time == datetime(
+        2026, 1, 30, 12, 42, 14, 422000, tzinfo=timezone.utc
+    )
 
     # TIME_LIMIT - returns actual usage values
     time_limit = usage.limits[1]
@@ -82,13 +79,17 @@ def test_bigmodel_parse_usage(bigmodel_provider, sample_bigmodel_response):
     assert time_limit.limit == "100"
     assert time_limit.used == "92"
     assert time_limit.remaining == "8"
-    assert time_limit.reset_time == datetime(2026, 1, 30, 12, 42, 14, 422000, tzinfo=timezone.utc)
+    assert time_limit.reset_time == datetime(
+        2026, 1, 30, 12, 42, 14, 422000, tzinfo=timezone.utc
+    )
     # Test usage_details parsing
-    assert len(time_limit.usage_details) == 2
+    assert len(time_limit.usage_details) == 3
     assert time_limit.usage_details[0].model_code == "search-prime"
     assert time_limit.usage_details[0].usage == 83
     assert time_limit.usage_details[1].model_code == "web-reader"
     assert time_limit.usage_details[1].usage == 9
+    assert time_limit.usage_details[2].model_code == "zread"
+    assert time_limit.usage_details[2].usage == 0
 
 
 def test_bigmodel_get_unit_name(bigmodel_provider):
