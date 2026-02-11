@@ -30,20 +30,6 @@ class BigModelProvider(BaseProvider):
             response.raise_for_status()
             return response.json()  # type: ignore[no-any-return]
 
-    def _calculate_monthly_reset_time(self) -> datetime:
-        """Calculate reset time for monthly limits (1st of next month at 00:00 UTC+8)."""
-        now = datetime.now(timezone.utc)
-
-        # Calculate first day of next month
-        if now.month == 12:
-            next_month = now.replace(year=now.year + 1, month=1, day=1)
-        else:
-            next_month = now.replace(month=now.month + 1, day=1)
-
-        # Create datetime at 00:00 in UTC+8 timezone
-        utc_plus_8 = timezone(timedelta(hours=8))
-        return next_month.replace(tzinfo=utc_plus_8, hour=0, minute=0, second=0, microsecond=0)
-
     def _parse_reset_time(self, timestamp_ms: int | None) -> datetime | None:
         """Parse millisecond timestamp to datetime."""
         if not timestamp_ms:
@@ -72,12 +58,7 @@ class BigModelProvider(BaseProvider):
             unit = limit.get("unit", 0)
             number = limit.get("number", 1)
 
-            # For TIME_LIMIT, reset time is always the 1st of next month at 00:00 UTC+8
-            reset_time: datetime | None
-            if limit_type == "TIME_LIMIT":
-                reset_time = self._calculate_monthly_reset_time()
-            else:
-                reset_time = self._parse_reset_time(limit.get("nextResetTime"))
+            reset_time = self._parse_reset_time(limit.get("nextResetTime"))
 
             # All BigModel limits have a time window (unit + number)
             # unit: 1=second, 2=minute, 3=hour, 4=day, 5=month, 6=year
@@ -92,17 +73,27 @@ class BigModelProvider(BaseProvider):
                     usage_details.append(
                         UsageDetail(
                             model_code=detail.get("modelCode", ""),
-                            usage=detail.get("usage", 0)
+                            usage=detail.get("usage", 0),
                         )
                     )
+
+            if limit_type == "TIME_LIMIT":
+                limit_ = str(limit.get("usage", 0))
+                used = str(limit.get("currentValue", 0))
+                remaining = str(limit.get("remaining", 0))
+            else:
+                # only percentage now
+                limit_ = str(100)
+                used = str(limit.get("percentage", 0))
+                remaining = str(100 - limit.get("percentage", 0))
 
             limits.append(
                 LimitDetail(
                     duration=duration,
                     time_unit=time_unit,
-                    limit=str(limit.get("usage", 0)),
-                    used=str(limit.get("currentValue", 0)),
-                    remaining=str(limit.get("remaining", 0)),
+                    limit=limit_,
+                    used=used,
+                    remaining=remaining,
                     reset_time=reset_time,
                     usage_details=usage_details,
                 )
@@ -115,7 +106,7 @@ class BigModelProvider(BaseProvider):
 
         return UsageInfo(
             provider=self.name,
-            membership_level=None,
+            membership_level=raw_data.get("data", {}).get("level"),
             limits=limits,
             raw_response=raw_data,
         )

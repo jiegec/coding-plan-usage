@@ -21,9 +21,6 @@ def sample_bigmodel_response():
                     "type": "TOKENS_LIMIT",
                     "unit": 3,
                     "number": 5,
-                    "usage": 40000000,
-                    "currentValue": 16931403,
-                    "remaining": 23068597,
                     "percentage": 42,
                     "nextResetTime": 1769776934422
                 },
@@ -35,6 +32,7 @@ def sample_bigmodel_response():
                     "currentValue": 92,
                     "remaining": 8,
                     "percentage": 92,
+                    "nextResetTime": 1769776934422,
                     "usageDetails": [
                         {
                             "modelCode": "search-prime",
@@ -68,21 +66,23 @@ def test_bigmodel_parse_usage(bigmodel_provider, sample_bigmodel_response):
     # Test limits parsing
     assert len(usage.limits) == 2
 
-    # TOKENS_LIMIT - now correctly captures the 5-hour time window
+    # TOKENS_LIMIT - returns percentage-based values
     tokens_limit = usage.limits[0]
     assert tokens_limit.duration == 5
     assert tokens_limit.time_unit == "hour"
-    assert tokens_limit.limit == "40000000"
-    assert tokens_limit.used == "16931403"
-    assert tokens_limit.remaining == "23068597"
+    assert tokens_limit.limit == "100"
+    assert tokens_limit.used == "42"
+    assert tokens_limit.remaining == "58"
+    assert tokens_limit.reset_time == datetime(2026, 1, 30, 12, 42, 14, 422000, tzinfo=timezone.utc)
 
-    # TIME_LIMIT
+    # TIME_LIMIT - returns actual usage values
     time_limit = usage.limits[1]
     assert time_limit.duration == 1
     assert time_limit.time_unit == "month"
     assert time_limit.limit == "100"
     assert time_limit.used == "92"
     assert time_limit.remaining == "8"
+    assert time_limit.reset_time == datetime(2026, 1, 30, 12, 42, 14, 422000, tzinfo=timezone.utc)
     # Test usage_details parsing
     assert len(time_limit.usage_details) == 2
     assert time_limit.usage_details[0].model_code == "search-prime"
