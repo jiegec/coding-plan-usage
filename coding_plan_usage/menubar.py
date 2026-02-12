@@ -1,5 +1,6 @@
 """macOS menubar app for displaying Coding Plan usage using native AppKit."""
 
+import argparse
 import asyncio
 import os
 import sys
@@ -422,5 +423,18 @@ def run_menubar(config_path: str | None = None) -> None:
     Args:
         config_path: Path to config file. Defaults to ~/.coding_plan_usage_config.json
     """
+    # Parse command line arguments if config_path not provided directly
+    if config_path is None:
+        parser = argparse.ArgumentParser(
+            description="Run Coding Plan Usage as a macOS menubar app."
+        )
+        parser.add_argument(
+            "--config",
+            default=None,
+            help="Path to configuration file (default: ~/.coding_plan_usage_config.json)",
+        )
+        args = parser.parse_args()
+        config_path = args.config
+
     status_bar = UsageStatusBar(config_path)
     status_bar.run()

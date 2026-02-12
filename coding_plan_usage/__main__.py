@@ -32,8 +32,8 @@ async def main() -> None:
     )
     parser.add_argument(
         "--config",
-        default="config.json",
-        help="Path to configuration file (default: config.json)",
+        default=None,
+        help="Path to configuration file (default: ~/.coding_plan_usage_config.json)",
     )
     parser.add_argument(
         "--menubar",
@@ -50,7 +50,7 @@ async def main() -> None:
         config = load_config(args.config)
     except FileNotFoundError as e:
         print(f"Error: {e}", file=sys.stderr)
-        print("\nPlease create a config.json file with the following structure:", file=sys.stderr)
+        print("\nPlease create a config file at ~/.coding_plan_usage_config.json with the following structure:", file=sys.stderr)
         print('''
 {
   "providers": {

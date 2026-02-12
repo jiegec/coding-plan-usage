@@ -14,11 +14,18 @@ class Config(BaseModel):
     providers: Dict[str, ProviderConfig]
 
 
-def load_config(config_path: str = "config.json") -> Config:
-    """Load configuration from JSON file."""
-    path = Path(config_path)
+def load_config(config_path: str | None = None) -> Config:
+    """Load configuration from JSON file.
+
+    If config_path is not provided, defaults to ~/.coding_plan_usage_config.json
+    """
+    if config_path is None:
+        path = Path.home() / ".coding_plan_usage_config.json"
+    else:
+        path = Path(config_path)
+
     if not path.exists():
-        raise FileNotFoundError(f"Config file not found: {config_path}")
+        raise FileNotFoundError(f"Config file not found: {path}")
 
     with open(path, "r", encoding="utf-8") as f:
         data = json.load(f)

@@ -38,23 +38,24 @@ Or use a custom config path (see usage below).
 
 ```bash
 # Run with default config at ~/.coding_plan_usage_config.json
-poetry run python -m coding_plan_usage
+poetry run coding-plan-usage
 
 # Run with specific config file
-poetry run python -m coding_plan_usage --config /path/to/config.json
+poetry run coding-plan-usage --config /path/to/config.json
 ```
 
 ### macOS Menubar App
 
 ```bash
 # Run menubar app with default config
-poetry run python -m coding_plan_usage --menubar
+poetry run coding-plan-usage-menubar
 
 # Run menubar app with specific config file
-poetry run python -m coding_plan_usage --menubar --config /path/to/config.json
+poetry run coding-plan-usage-menubar --config /path/to/config.json
 ```
 
 **Menubar Features:**
+
 - Displays current usage percentage for each configured provider in the menu bar (e.g., `kimi: 13% | bigmodel: 45%`)
 - Auto-refreshes every 5 minutes
 - Click the menu bar icon to open dropdown menu with:
