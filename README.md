@@ -10,6 +10,8 @@ A CLI tool to fetch and display Coding Plan usage from multiple AI providers.
 ## Installation
 
 ```bash
+git clone https://github.com/jiegec/coding-plan-usage
+cd coding-plan-usage
 poetry install
 ```
 
