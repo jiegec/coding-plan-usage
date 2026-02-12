@@ -91,4 +91,3 @@ Each provider implements these methods. The main module iterates over configured
 - Use `pydantic` for config validation and data modeling
 - Use `httpx` for HTTP requests (supports both sync and async)
 - Handle API errors gracefully with try/except blocks
-- Support multiple output formats: table (default), JSON
