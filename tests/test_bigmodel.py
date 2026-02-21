@@ -39,7 +39,8 @@ def sample_bigmodel_response():
                         {"modelCode": "zread", "usage": 0},
                     ],
                 },
-            ]
+            ],
+            "level": "lite",
         },
         "success": True,
     }
@@ -56,7 +57,7 @@ def test_bigmodel_parse_usage(bigmodel_provider, sample_bigmodel_response):
 
     assert usage.provider == "bigmodel"
     assert usage.user_id is None  # BigModel doesn't provide user ID
-    assert usage.membership_level is None
+    assert usage.membership_level is "lite"
 
     # Test limits parsing
     assert len(usage.limits) == 2
