@@ -57,7 +57,7 @@ def test_bigmodel_parse_usage(bigmodel_provider, sample_bigmodel_response):
 
     assert usage.provider == "bigmodel"
     assert usage.user_id is None  # BigModel doesn't provide user ID
-    assert usage.membership_level is "lite"
+    assert usage.membership_level == "lite"
 
     # Test limits parsing
     assert len(usage.limits) == 2
