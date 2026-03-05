@@ -6,6 +6,7 @@ A CLI tool to fetch and display Coding Plan usage from multiple AI providers.
 
 - **Kimi** - https://api.kimi.com/coding/v1/usages
 - **智谱 BigModel** - https://open.bigmodel.cn/api/monitor/usage/quota/limit
+- **Infini AI** - https://cloud.infini-ai.com/maas/coding/usage
 
 ## Installation
 
@@ -27,6 +28,9 @@ Create a config file at `~/.coding_plan_usage_config.json`:
     },
     "bigmodel": {
       "api_key": "your-bigmodel-access-key"
+    },
+    "infini": {
+      "api_key": "your-infini-api-key"
     }
   }
 }
