@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-A Python CLI tool to fetch and display Coding Plan usage from multiple AI providers (智谱 BigModel, Kimi, etc.).
+A Python CLI tool to fetch and display Coding Plan usage from multiple AI providers (智谱 BigModel, Kimi, Infini AI, etc.).
 
 ## Development Commands
 
@@ -48,7 +48,8 @@ coding_plan_usage/
 │   ├── __init__.py
 │   ├── base.py          # Abstract base class for providers
 │   ├── bigmodel.py      # 智谱 BigModel API client
-│   └── kimi.py          # Kimi API client
+│   ├── kimi.py          # Kimi API client
+│   └── infini.py        # Infini AI API client
 ├── models.py            # Pydantic data models for responses
 └── formatter.py         # Output formatting
 ```
@@ -65,6 +66,9 @@ The tool reads a JSON config file with provider credentials:
     },
     "kimi": {
       "api_key": "your-api-key"
+    },
+    "infini": {
+      "api_key": "your-api-key"
     }
   }
 }
@@ -73,9 +77,8 @@ The tool reads a JSON config file with provider credentials:
 ## Provider API Endpoints
 
 - **智谱 BigModel**: `https://open.bigmodel.cn/api/monitor/usage/quota/limit`
-  - Uses access key authentication
 - **Kimi**: `https://api.kimi.com/coding/v1/usages`
-  - Uses API key authentication
+- **Infini AI**: `https://cloud.infini-ai.com/maas/coding/usage`
 
 ## Architecture
 

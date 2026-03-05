@@ -7,6 +7,7 @@ from .models import UsageInfo
 from .providers.base import BaseProvider
 from .providers.kimi import KimiProvider
 from .providers.bigmodel import BigModelProvider
+from .providers.infini import InfiniProvider
 from .formatter import format_usage_simple
 from .menubar import run_menubar
 
@@ -18,6 +19,8 @@ async def fetch_provider_usage(provider_name: str, provider_config: ProviderConf
         provider = KimiProvider(provider_config)  # type: ignore[assignment]
     elif provider_name == "bigmodel":
         provider = BigModelProvider(provider_config)  # type: ignore[assignment]
+    elif provider_name == "infini":
+        provider = InfiniProvider(provider_config)  # type: ignore[assignment]
     else:
         raise ValueError(f"Unknown provider: {provider_name}")
 
