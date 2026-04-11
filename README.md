@@ -2,6 +2,8 @@
 
 A CLI tool to fetch and display Coding Plan usage from multiple AI providers.
 
+> Note: You might want to use [openusage](https://github.com/robinebers/openusage) for more providers.
+
 ## Supported Providers
 
 - **Kimi** - https://api.kimi.com/coding/v1/usages
