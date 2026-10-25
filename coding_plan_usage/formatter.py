@@ -1,5 +1,6 @@
 from datetime import datetime
-from .models import UsageInfo, LimitDetail
+
+from .models import LimitDetail, UsageInfo
 
 
 def _format_datetime(dt: datetime | None) -> str | None:

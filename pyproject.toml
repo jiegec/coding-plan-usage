@@ -15,8 +15,8 @@ pyobjc-framework-cocoa = { version = "^12.1", markers = "sys_platform == 'darwin
 [tool.poetry.group.dev.dependencies]
 pytest = "^9.0.0"
 pytest-asyncio = "^1.0.0"
-mypy = "^1.8.0"
-ruff = "^0.14.0"
+mypy = "^2.4.0"
+ruff = "^0.17.2"
 
 [tool.poetry.scripts]
 coding-plan-usage = "coding_plan_usage.__main__:cli"

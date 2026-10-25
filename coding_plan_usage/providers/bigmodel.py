@@ -1,6 +1,8 @@
-import httpx
 from datetime import datetime, timezone
-from ..models import UsageInfo, LimitDetail, UsageDetail
+
+import httpx
+
+from ..models import LimitDetail, UsageDetail, UsageInfo
 from .base import BaseProvider
 
 

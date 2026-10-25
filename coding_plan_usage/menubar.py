@@ -8,16 +8,16 @@ import threading
 from datetime import datetime
 from typing import Any
 
-from .config import load_config, ProviderConfig
-from .models import UsageInfo, LimitDetail
-from .providers.kimi import KimiProvider
-from .providers.bigmodel import BigModelProvider
-from .formatter import _compute_percentage, format_usage_simple
-
 # Import AppKit for native macOS menu bar
 import AppKit  # type: ignore[import-untyped]
 import Foundation  # type: ignore[import-untyped]
 import objc  # type: ignore[import-untyped]
+
+from .config import ProviderConfig, load_config
+from .formatter import _compute_percentage, format_usage_simple
+from .models import LimitDetail, UsageInfo
+from .providers.bigmodel import BigModelProvider
+from .providers.kimi import KimiProvider
 
 
 class AppDelegate(AppKit.NSObject):  # type: ignore[misc]
@@ -178,7 +178,7 @@ class UsageStatusBar:
                 self.config = load_config(self.config_path)
             except FileNotFoundError:
                 return []
-            except Exception:
+            except Exception:  # noqa: BLE001
                 return []
 
         usages: list[UsageInfo] = []
@@ -210,7 +210,7 @@ class UsageStatusBar:
             provider.authenticate()
             raw_data = await provider.fetch_usage()
             return provider.parse_usage(raw_data)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             return UsageInfo(
                 provider=provider_name,
                 limits=[],

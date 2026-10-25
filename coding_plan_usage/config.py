@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
+
 from pydantic import BaseModel
-from typing import Dict
 
 
 class ProviderConfig(BaseModel):
@@ -11,7 +11,7 @@ class ProviderConfig(BaseModel):
 
 class Config(BaseModel):
     """Main configuration loaded from JSON file."""
-    providers: Dict[str, ProviderConfig]
+    providers: dict[str, ProviderConfig]
 
 
 def load_config(config_path: str | None = None) -> Config:

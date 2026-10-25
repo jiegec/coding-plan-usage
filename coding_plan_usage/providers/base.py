@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Any
-from ..models import UsageInfo
+
 from ..config import ProviderConfig
+from ..models import UsageInfo
 
 
 class BaseProvider(ABC):
@@ -15,19 +16,15 @@ class BaseProvider(ABC):
     @abstractmethod
     def name(self) -> str:
         """Provider name."""
-        pass
 
     @abstractmethod
     def authenticate(self) -> None:
         """Setup authentication headers/credentials."""
-        pass
 
     @abstractmethod
     async def fetch_usage(self) -> Any:
         """Call provider API and return raw response data."""
-        pass
 
     @abstractmethod
     def parse_usage(self, raw_data: dict) -> UsageInfo:
         """Convert raw response to standardized UsageInfo model."""
-        pass

@@ -1,7 +1,9 @@
-import pytest
 from datetime import datetime, timezone
-from coding_plan_usage.providers.kimi import KimiProvider
+
+import pytest
+
 from coding_plan_usage.config import ProviderConfig
+from coding_plan_usage.providers.kimi import KimiProvider
 
 
 @pytest.fixture

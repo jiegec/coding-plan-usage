@@ -1,6 +1,7 @@
 import pytest
-from coding_plan_usage.providers.infini import InfiniProvider
+
 from coding_plan_usage.config import ProviderConfig
+from coding_plan_usage.providers.infini import InfiniProvider
 
 
 @pytest.fixture

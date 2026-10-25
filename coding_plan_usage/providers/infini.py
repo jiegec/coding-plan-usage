@@ -1,5 +1,6 @@
 import httpx
-from ..models import UsageInfo, LimitDetail
+
+from ..models import LimitDetail, UsageInfo
 from .base import BaseProvider
 
 

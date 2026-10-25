@@ -2,14 +2,14 @@ import argparse
 import asyncio
 import sys
 
-from .config import load_config, ProviderConfig
-from .models import UsageInfo
-from .providers.base import BaseProvider
-from .providers.kimi import KimiProvider
-from .providers.bigmodel import BigModelProvider
-from .providers.infini import InfiniProvider
+from .config import ProviderConfig, load_config
 from .formatter import format_usage_simple
 from .menubar import run_menubar
+from .models import UsageInfo
+from .providers.base import BaseProvider
+from .providers.bigmodel import BigModelProvider
+from .providers.infini import InfiniProvider
+from .providers.kimi import KimiProvider
 
 
 async def fetch_provider_usage(provider_name: str, provider_config: ProviderConfig) -> UsageInfo:
@@ -72,7 +72,7 @@ async def main() -> None:
             print(f"Fetching usage for {provider_name}...", file=sys.stderr)
             usage = await fetch_provider_usage(provider_name, provider_config)
             usages.append(usage)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             print(f"Error fetching {provider_name} usage: {e}", file=sys.stderr)
 
     if usages:
